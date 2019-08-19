@@ -1,0 +1,16 @@
+---
+galaxy_info:
+  author: msarti
+  role_name: restic
+  description: Restic backup tool
+  license: MIT
+  min_ansible_version: 1.2
+  github_branch: master
+  platforms:
+    - name: Fedora
+      versions:
+        - all
+  galaxy_tags:
+    - restic
+    - backup
+dependencies: []

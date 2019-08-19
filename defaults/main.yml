@@ -1,0 +1,29 @@
+---
+# Install restic
+# Default true
+restic_enable: true
+
+# Config path
+restic_config_path: /etc/restic
+
+# where filelist is saved
+restic_filelist: '{{ restic_config_path }}/filelist'
+
+# Repository type
+# Supported types are:
+# - local
+# - sftp
+# - aws
+restic_repository_type: local
+
+restic_repository_url: /tmp/repo
+
+# Repository password
+restic_repository_password: changeme
+
+# For aws repository: it is mandatory to
+# set restic_aws_access_key_id and
+# restic_aws_secret_access_key.
+# No default is provided.
+# restic_aws_access_key_id: none
+# restic_aws_secret_access_key: none

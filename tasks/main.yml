@@ -1,0 +1,19 @@
+---
+- name: Check AWS variables
+  fail:
+    msg: AWS variables are not set
+  when: restic_enable and restic_repository_type == 'aws'
+    and ( restic_aws_access_key_id is not defined or
+    restic_aws_secret_access_key is not defined )
+- name: Install yum-plugin-copr su CentOS
+  become: true
+  get_url:
+    url: https://copr.fedorainfracloud.org/coprs/copart/restic/repo/epel-7/copart-restic-epel-7.repo
+    dest: /etc/yum.repos.d/copart-restic-epel-7.repo
+  when: restic_enable and ansible_distribution == 'CentOS'
+- name: Install restic
+  become: true
+  package:
+    name: restic
+    state: present
+  when: restic_enable
