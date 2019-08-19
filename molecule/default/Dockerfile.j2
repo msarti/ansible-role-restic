@@ -1,6 +1,6 @@
 # Molecule managed
 
-{% if item.registry is defined %}
+{% if restic_repository_type == 'aws' %}
 FROM {{ item.registry.url }}/{{ item.image }}
 {% else %}
 FROM {{ item.image }}

@@ -17,3 +17,77 @@
     name: restic
     state: present
   when: restic_enable
+- name: Ensure that config directory exists
+  file:
+    name: "{{ restic_config_path }}"
+    state: directory
+  when: restic_enable
+- name: Create the environment variables
+  become: true
+  template:
+    src: restic_env.j2
+    dest: "{{ restic_env }}"
+    owner: root
+    group: root
+    mode: '0644'
+  when: restic_enable
+- name: Link environment file to /etc/profile.d
+  become: true
+  file:
+    src: "{{ restic_env }}"
+    dest: /etc/profile.d/restic_env.sh
+    owner: root
+    group: root
+    state: link
+  when: restic_enable and restic_env_profile
+- name: ensure filelist exists
+  become: true
+  copy:
+    content: ""
+    dest: "{{ restic_filelist }}"
+    force: no
+    group: root
+    owner: root
+    mode: '0644' 
+  when: restic_enable
+- name: Populate filelist
+  become: true
+  lineinfile:
+    line: "{{ item }}"
+    path: "{{ restic_filelist }}"
+  with_items: "{{ restic_backup_files }}"
+  when: restic_enable
+- name: Schedule the backup job
+  become: true
+  cron:
+    name: "Backup restic"
+    minute: "{{ restic_backup_minute }}"
+    hour: "{{ restic_backup_hour }}"
+    month: "{{ restic_backup_month }}"
+    weekday: "{{ restic_backup_weekday }}"
+    job: "source {{ restic_env }}; restic backup --files-from {{ restic_filelist }} --json --tag {{ restic_backup_tag }} >> {{ restic_backup_log }} 2>&1"
+  when: restic_enable and restic_backup_scheduled
+- name: Schedule the forget job
+  become: true
+  cron:
+    name: "Forget restic"
+    minute: "{{ restic_forget_minute }}"
+    hour: "{{ restic_forget_hour }}"
+    month: "{{ restic_forget_month }}"
+    weekday: "{{ restic_forget_weekday }}"
+    job: "source {{ restic_env }}; restic forget {{ restic_forget_policy }} --tag {{ restic_backup_tag }} --json >> {{ restic_forget_log }} 2>&1"
+  when: restic_enable and restic_forget_scheduled
+- name: Schedule the prune job
+  become: true
+  cron:
+    name: "Prune restic"
+    minute: "{{ restic_prune_minute }}"
+    hour: "{{ restic_prune_hour }}"
+    month: "{{ restic_prune_month }}"
+    weekday: "{{ restic_prune_weekday }}"
+    job: "source {{ restic_env }}; restic prune"
+  when: restic_enable and restic_prune_scheduled
+- name: Initialize the repository
+  shell: source {{ restic_env }}; restic -r {{ restic_repository_url }} init
+  when: restic_enable and restic_init_repository
+
